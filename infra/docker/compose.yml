@@ -1,0 +1,48 @@
+services:
+  db:
+    networks:
+      default:
+        aliases:
+          - $COMPOSE_PROJECT_NAME-postgres
+    container_name: $COMPOSE_PROJECT_NAME-postgres
+    image: postgres:latest
+    volumes:
+      - db-data:/var/lib/postgresql/data:rw
+    environment:
+      POSTGRES_DB: footconnect
+      POSTGRES_PASSWORD: user
+      POSTGRES_USER: password
+
+  frankenphp:
+    networks:
+      default:
+        aliases:
+          - $COMPOSE_PROJECT_NAME-frankenphp
+    container_name: $COMPOSE_PROJECT_NAME-php
+    build:
+      target: ${BUILD_TARGET:-dev}
+      context: ../..
+      dockerfile: infra/docker/php/Dockerfile
+      args:
+        TIMEZONE: ${TIMEZONE}
+    ports:
+          - "8123:80"
+          - "443:443"
+    volumes:
+      - ../..:/app
+    depends_on:
+      - db
+
+  node:
+    build:
+      context: ../..
+      dockerfile: infra/docker/php/Dockerfile
+      target: node-builder
+    volumes:
+      - ../..:/app
+
+volumes:
+  db-data:
+
+networks:
+  default:

@@ -1,0 +1,18 @@
+#networks:
+#  traefik:
+#    name: traefik-network
+#    external: true
+#
+#services:
+#  frankenphp:
+#    networks:
+#      traefik:
+#        aliases:
+#          - $SERVER_NAME
+#    ports:
+#      - "8123:80"
+#      - "443:443"
+#    labels:
+#      - traefik.enable=true
+#      - traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Host(`${SERVER_NAME}`)
+#      - traefik.http.routers.${COMPOSE_PROJECT_NAME}.entrypoints=http
