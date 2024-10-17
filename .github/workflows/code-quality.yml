@@ -1,0 +1,69 @@
+name: Project quality check
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        options: >
+          --health-cmd="pg_isready -U postgres" 
+          --health-interval=10s 
+          --health-timeout=5s 
+          --health-retries=5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Install Symfony CLI
+        run: curl -sS https://get.symfony.com/cli/installer | bash
+        env:
+          PATH: ${{ runner.home }}/.symfony5/bin:${{ env.PATH }}
+
+      - name: Check Symfony Requirements
+        run: symfony check:requirements
+
+      - name: Run PHP CodeSniffer
+        run: php ./vendor/bin/phpcs src/
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse
+
+      - name: Run PHPUnit
+        env:
+          DB_HOST: 127.0.0.1
+          DB_DATABASE: test
+          DB_USERNAME: postgres
+          DB_PASSWORD: password
+          DB_PORT: 5432
+        run: vendor/bin/phpunit --coverage-text --colors=never
+
+      - name: Check Composer Security Vulnerabilities
+        run: symfony security:check
+

@@ -1,7 +1,7 @@
 services:
   db:
     networks:
-      default:
+      footconnect:
         aliases:
           - $COMPOSE_PROJECT_NAME-postgres
     container_name: $COMPOSE_PROJECT_NAME-postgres
@@ -15,7 +15,7 @@ services:
 
   frankenphp:
     networks:
-      default:
+      footconnect:
         aliases:
           - $COMPOSE_PROJECT_NAME-frankenphp
     container_name: $COMPOSE_PROJECT_NAME-php
@@ -45,4 +45,4 @@ volumes:
   db-data:
 
 networks:
-  default:
+  footconnect:
