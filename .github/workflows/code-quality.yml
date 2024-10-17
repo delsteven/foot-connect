@@ -2,12 +2,11 @@ name: Project quality check
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
-
-permissions:
-  contents: read
+    branches:
+      - main
 
 jobs:
   quality:
@@ -15,7 +14,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:latest
+        image: postgres:13
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
@@ -24,13 +23,16 @@ jobs:
           - 5432:5432
 
     steps:
+      - name: Install curl and bash
+        run: sudo apt-get update && sudo apt-get install -y curl bash
+
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.3' # Remplacez par la version de PHP que vous utilisez
           tools: composer
 
       - name: Install dependencies
@@ -45,10 +47,13 @@ jobs:
         run: symfony check:requirements
 
       - name: Run PHP CodeSniffer
-        run: php ./vendor/bin/phpcs src/
+        run: vendor/bin/phpcs --standard=PSR12 src
 
       - name: Run PHPStan
-        run: vendor/bin/phpstan analyse
+        run: vendor/bin/phpstan analyse src --level=7
+
+      - name: Wait for PostgreSQL to be ready
+        run: sleep 15
 
       - name: Run PHPUnit
         env:
