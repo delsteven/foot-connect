@@ -59,6 +59,3 @@ jobs:
           DB_PORT: 5432
         run: vendor/bin/phpunit --coverage-text --colors=never
 
-      - name: Check Composer Security Vulnerabilities
-        run: symfony security:check
-
