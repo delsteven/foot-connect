@@ -38,19 +38,14 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-suggest
 
-      - name: Install Symfony CLI
-        run: curl -sS https://get.symfony.com/cli/installer | bash
-        env:
-          PATH: ${{ runner.home }}/.symfony5/bin:${{ env.PATH }}
-
-      - name: Check Symfony Requirements
-        run: symfony check:requirements
+      - name: Security
+        run: composer audit
 
       - name: Run PHP CodeSniffer
-        run: vendor/bin/phpcs --standard=PSR12 src
+        run: vendor/bin/phpcs src/
 
       - name: Run PHPStan
-        run: vendor/bin/phpstan analyse src --level=7
+        run: vendor/bin/phpstan analyse
 
       - name: Wait for PostgreSQL to be ready
         run: sleep 15
